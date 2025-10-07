@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MFA — Prototype 2.1 (Citizen-First + International Showcase)</title>
+  <meta name="description" content="Ministry of Foreign Affairs — Homepage prototype blending citizen-first IA with international showcase." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mfa-blue': '#2550af',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .carousel-dot[aria-current="true"] { background-color: #2550af; }
+    .modal-backdrop { backdrop-filter: blur(4px); }
+    .modal-content { animation: slideDown 0.3s ease-out; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-100 text-mfa-blue px-3 py-1 rounded">Skip to main content</a>
+
+  <!-- Utility bar -->
+  <div class="bg-slate-900 text-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between text-sm">
+      <div class="flex items-center gap-4">
+        <button class="underline underline-offset-2 hover:no-underline">Accessibility</button>
+        <a href="#" class="underline underline-offset-2 hover:no-underline">Bahasa Melayu</a>
+        <span class="hidden sm:inline">•</span>
+        <a href="#" class="hidden sm:inline underline underline-offset-2 hover:no-underline">Site map</a>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <form class="relative" role="search" aria-label="Site search">
+        <label for="q" class="sr-only">Search</label>
+          <input id="q" name="q" type="search" placeholder="Search…" class="h-8 w-64 rounded-md px-3 bg-slate-800/70 placeholder-slate-300 text-slate-100 outline-none focus:ring-2 focus:ring-mfa-blue" />
+        </form>
+        <button id="advancedSearchBtn" class="text-blue-400 text-sm hover:text-blue-300 underline underline-offset-2">Advanced</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Search Modal -->
+  <div id="advancedSearchModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="modal-backdrop fixed inset-0 bg-slate-900/70" onclick="document.getElementById('advancedSearchModal').classList.add('hidden')"></div>
+    <div class="flex min-h-full items-start justify-center p-4 pt-20">
+      <div class="modal-content relative w-full max-w-3xl rounded-xl bg-white shadow-2xl">
+        <!-- Header -->
+        <div class="border-b bg-slate-50 px-6 py-4 rounded-t-xl">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-900">Advanced Search</h2>
+            <button onclick="document.getElementById('advancedSearchModal').classList.add('hidden')" class="h-8 w-8 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-900" aria-label="Close">✕</button>
+          </div>
+          <p class="text-sm text-slate-600 mt-1">Refine your search with advanced filters</p>
+        </div>
+
+        <!-- Search Form -->
+        <form class="p-6 space-y-6">
+          <!-- Keywords -->
+          <div>
+            <label for="adv-keywords" class="block text-sm font-semibold text-slate-700 mb-2">Keywords</label>
+            <input type="text" id="adv-keywords" placeholder="Enter search terms…" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none" />
+            <p class="text-xs text-slate-500 mt-1">Use quotes for exact phrase: "foreign policy"</p>
+          </div>
+
+          <!-- Content Type & Region Grid -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Content Type -->
+            <div>
+              <label for="adv-content-type" class="block text-sm font-semibold text-slate-700 mb-2">Content Type</label>
+              <select id="adv-content-type" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none">
+                <option value="">All Content</option>
+                <option value="news">News & Media</option>
+                <option value="press">Press Releases</option>
+                <option value="speeches">Speeches & Statements</option>
+                <option value="announcements">Announcements</option>
+                <option value="events">Events</option>
+                <option value="publications">Publications</option>
+                <option value="treaties">Treaties & Agreements</option>
+              </select>
+            </div>
+
+            <!-- Region/Mission -->
+            <div>
+              <label for="adv-region" class="block text-sm font-semibold text-slate-700 mb-2">Region/Mission</label>
+              <select id="adv-region" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none">
+                <option value="">All Regions</option>
+                <option value="asean">ASEAN</option>
+                <option value="asia">Asia-Pacific</option>
+                <option value="europe">Europe</option>
+                <option value="americas">Americas</option>
+                <option value="middle-east">Middle East</option>
+                <option value="africa">Africa</option>
+                <option value="oceania">Oceania</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Date Range -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Date Range</label>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label for="adv-date-from" class="text-xs text-slate-600 mb-1 block">From</label>
+                <input type="date" id="adv-date-from" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none" />
+              </div>
+              <div>
+                <label for="adv-date-to" class="text-xs text-slate-600 mb-1 block">To</label>
+                <input type="date" id="adv-date-to" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Language & Document Type Grid -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Language -->
+            <div>
+              <label for="adv-language" class="block text-sm font-semibold text-slate-700 mb-2">Language</label>
+              <select id="adv-language" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none">
+                <option value="">All Languages</option>
+                <option value="en">English</option>
+                <option value="ms">Bahasa Melayu</option>
+              </select>
+            </div>
+
+            <!-- Document Type -->
+            <div>
+              <label for="adv-doc-type" class="block text-sm font-semibold text-slate-700 mb-2">Document Type</label>
+              <select id="adv-doc-type" class="w-full h-11 rounded-lg border border-slate-300 px-4 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none">
+                <option value="">All Formats</option>
+                <option value="pdf">PDF Documents</option>
+                <option value="webpage">Web Pages</option>
+                <option value="images">Images</option>
+                <option value="videos">Videos</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Advanced Options Checkboxes -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-3">Additional Options</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="adv-exact" class="h-4 w-4 rounded border-slate-300 text-mfa-blue focus:ring-2 focus:ring-mfa-blue" />
+                <span class="text-sm text-slate-700">Search exact phrase only</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="adv-title" class="h-4 w-4 rounded border-slate-300 text-mfa-blue focus:ring-2 focus:ring-mfa-blue" />
+                <span class="text-sm text-slate-700">Search in titles only</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="adv-archived" class="h-4 w-4 rounded border-slate-300 text-mfa-blue focus:ring-2 focus:ring-mfa-blue" />
+                <span class="text-sm text-slate-700">Include archived content</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-between gap-4 pt-4 border-t">
+            <button type="reset" class="text-sm text-slate-600 hover:text-slate-900 underline underline-offset-2">Clear all filters</button>
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="document.getElementById('advancedSearchModal').classList.add('hidden')" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</button>
+              <button type="submit" class="px-6 py-2.5 rounded-lg bg-mfa-blue text-white font-semibold hover:bg-blue-600 shadow-sm">Search</button>
+            </div>
+          </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-mfa-blue shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <a href="#" class="flex items-center gap-3">
+          <img src="mfa_brunei_white.png" alt="Ministry of Foreign Affairs Brunei Darussalam" class="h-12 w-auto">
+        </a>
+        <nav aria-label="Primary" class="hidden lg:block">
+          <ul class="flex items-center gap-6 text-white">
+            <li><a class="hover:text-blue-200" href="#">Home</a></li>
+            <li><a class="hover:text-blue-200" href="#">Foreign Policy</a></li>
+            <li><a class="hover:text-blue-200" href="#">Missions</a></li>
+            <li><a class="hover:text-blue-200" href="#">Services</a></li>
+            <li><a class="hover:text-blue-200" href="#">News</a></li>
+            <li><a class="hover:text-blue-200" href="#">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="lg:hidden flex items-center gap-2">
+          <button id="advancedSearchBtnMobile" class="inline-flex items-center justify-center h-10 w-10 rounded-md border border-white/30 hover:bg-white/10 text-white" aria-label="Search">
+            <span class="text-lg">🔍</span>
+          </button>
+          <button class="inline-flex items-center justify-center h-10 w-10 rounded-md border border-white/30 hover:bg-white/10 text-white" aria-label="Open menu">
+          <span>☰</span>
+        </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO: News slideshow (International showcase) -->
+    <!-- HERO: Slideshow (left) + Contact sidebar (right) -->
+<section class="bg-white">
+  <div class="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 mt-0 sm:mt-6">
+    <div class="grid lg:grid-cols-12 gap-6">
+      
+      <!-- Left: Slideshow -->
+      <div class="lg:col-span-8">
+        <div class="rounded-xl overflow-hidden border">
+          <div class="relative">
+            <!-- Slides -->
+            <div id="heroCarousel" class="flex overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth" aria-label="Featured international news">
+              <!-- Slide 1 -->
+              <figure class="min-w-full snap-start relative">
+                <img src="https://www.mfa.gov.bn/PublishingImages/Lists/News%20Headlines/AllItems_copy(1)/1724481935462.jpg" alt="His Majesty receives Foreign Minister" class="w-full h-[56vw] sm:h-[460px] object-cover">
+                <figcaption class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-black/10 text-white p-6">
+                  <p class="text-blue-300 text-xs font-semibold uppercase">Diplomacy</p>
+                  <h1 class="text-2xl sm:text-3xl font-bold">Royal Audience with Foreign Dignitaries</h1>
+                  <p class="text-sm text-slate-200 mt-1 max-w-3xl">His Majesty receives Minister of Foreign Affairs in audience.</p>
+                </figcaption>
+              </figure>
+              <!-- Slide 2 -->
+              <figure class="min-w-full snap-start relative">
+                <img src="https://www.mfa.gov.bn/PublishingImages/Lists/News%20Headlines/AllItems_copy(1)/1737790825427.jpg" alt="International cooperation" class="w-full h-[56vw] sm:h-[460px] object-cover">
+                <figcaption class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-black/10 text-white p-6">
+                  <p class="text-blue-300 text-xs font-semibold uppercase">Foreign Policy</p>
+                  <h2 class="text-2xl sm:text-3xl font-bold">Strengthening Multilateral Cooperation</h2>
+                  <p class="text-sm text-slate-200 mt-1 max-w-3xl">Updates on Brunei's positions across multilateral forums.</p>
+                </figcaption>
+              </figure>
+              <!-- Slide 3 -->
+              <figure class="min-w-full snap-start relative">
+                <img src="https://www.mfa.gov.bn/PublishingImages/Lists/News%20Headlines/AllItems_copy(1)/IMG-20250422-WA0029.jpg" alt="Regional summit" class="w-full h-[56vw] sm:h-[460px] object-cover">
+                <figcaption class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-black/10 text-white p-6">
+                  <p class="text-blue-300 text-xs font-semibold uppercase">Regional Affairs</p>
+                  <h2 class="text-2xl sm:text-3xl font-bold">ASEAN Ministerial Meeting</h2>
+                  <p class="text-sm text-slate-200 mt-1 max-w-3xl">Brunei participates in regional dialogue and cooperation.</p>
+                </figcaption>
+              </figure>
+              <!-- Slide 4 -->
+              <figure class="min-w-full snap-start relative">
+                <img src="https://www.mfa.gov.bn/PublishingImages/Lists/News%20Headlines/AllItems_copy(1)/1724131242898.jpg" alt="Bilateral relations" class="w-full h-[56vw] sm:h-[460px] object-cover">
+                <figcaption class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-black/10 text-white p-6">
+                  <p class="text-blue-300 text-xs font-semibold uppercase">Bilateral Relations</p>
+                  <h2 class="text-2xl sm:text-3xl font-bold">Strengthening Bilateral Partnerships</h2>
+                  <p class="text-sm text-slate-200 mt-1 max-w-3xl">Official meetings and cooperation agreements.</p>
+                </figcaption>
+              </figure>
+            </div>
+
+            <!-- Controls (reuse existing JS) -->
+            <!-- Previous Button (Left Side) -->
+            <button id="heroPrev" class="absolute left-4 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-lg text-2xl text-slate-800 z-10" aria-label="Previous slide">‹</button>
+            
+            <!-- Next Button (Right Side) -->
+            <button id="heroNext" class="absolute right-4 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 hover:bg-white shadow-lg text-2xl text-slate-800 z-10" aria-label="Next slide">›</button>
+            
+            <!-- Dots (Bottom Center, above caption) -->
+            <div class="absolute bottom-32 sm:bottom-36 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+                <button class="carousel-dot h-2 w-2 rounded-full bg-white/60" aria-label="Slide 1" aria-current="true"></button>
+                <button class="carousel-dot h-2 w-2 rounded-full bg-white/60" aria-label="Slide 2"></button>
+                <button class="carousel-dot h-2 w-2 rounded-full bg-white/60" aria-label="Slide 3"></button>
+              <button class="carousel-dot h-2 w-2 rounded-full bg-white/60" aria-label="Slide 4"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Contact sidebar (AU-style) -->
+      <aside class="lg:col-span-4">
+        <div class="lg:sticky lg:top-6 rounded-xl border bg-slate-50 p-6 h-[56vw] sm:h-[460px] flex flex-col">
+          <h2 class="text-base font-extrabold tracking-wide text-slate-800">24-HOUR CONSULAR EMERGENCY CONTACT</h2>
+
+          <div class="mt-4 space-y-3">
+            <p class="text-xl font-semibold">
+              <a href="tel:+6738716001" class="hover:text-mfa-blue">+673 871 6001</a>
+            </p>
+          </div>
+
+          <div class="mt-4 space-y-1">
+            <p class="text-sm text-slate-600">General Lines</p>
+            <p class="text-slate-800">
+              HQ: <a href="tel:+6732261177" class="font-medium text-mfa-blue hover:text-blue-700">+673 226 1177</a>
+            </p>
+            <p class="text-slate-800">
+              ICC: <a href="tel:+6732383374" class="font-medium text-mfa-blue hover:text-blue-700">+673 238 3374</a>
+            </p>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-sm text-slate-600">Working hours</p>
+            <p class="text-slate-800">Mon–Thu &amp; Sat • 7:45am – 4:30pm</p>
+          </div>
+
+          <div class="mt-5">
+            <a href="#" class="text-mfa-blue font-medium underline underline-offset-2">Get help overseas</a>
+          </div>
+
+
+          <!-- Optional: quick chips echoing the small pill buttons you liked -->
+          <div class="mt-auto pt-6 flex flex-wrap gap-2">
+            <a href="#" class="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 hover:border-mfa-blue hover:bg-blue-50 text-sm">🛫 eRegister</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 hover:border-mfa-blue hover:bg-blue-50 text-sm">🛂 Visa Info</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 hover:border-mfa-blue hover:bg-blue-50 text-sm">🏛️ Missions Directory</a>
+            <a href="tel:+6738716001" class="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 hover:border-mfa-blue hover:bg-blue-50 text-sm">📞 Hotline</a>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+
+    <!-- Announcements (left) + Missions & Consulates (right) -->
+    <section class="py-12 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-12 gap-8">
+    
+          <!-- LEFT: Announcements -->
+          <div class="lg:col-span-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold">Announcements</h2>
+              <button class="text-sm text-mfa-blue hover:underline font-medium flex items-center gap-1">
+                View all 
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </button>
+            </div>
+    
+            <!-- Filters compact toolbar -->
+            <form class="bg-white rounded-xl border border-slate-200 shadow-md p-4 mb-6 space-y-3">
+              <!-- Date Range Row -->
+              <div class="flex gap-3">
+                <input type="date" placeholder="From date" class="flex-1 h-10 rounded-lg border border-slate-300 px-3 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none transition-all">
+                <input type="date" placeholder="To date" class="flex-1 h-10 rounded-lg border border-slate-300 px-3 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none transition-all">
+              </div>
+              
+              <!-- Search Row -->
+              <div class="flex gap-3">
+                <input type="search" placeholder="Keyword…" class="flex-1 h-10 rounded-lg border border-slate-300 px-3 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none transition-all">
+                <select class="h-10 rounded-lg border border-slate-300 px-3 focus:ring-2 focus:ring-mfa-blue focus:border-mfa-blue outline-none transition-all min-w-[150px]">
+                <option>All categories</option>
+                <option>Press Releases</option>
+                <option>Speeches</option>
+                <option>Messages</option>
+                <option>Statements</option>
+              </select>
+                <button type="submit" class="h-10 px-5 rounded-lg bg-mfa-blue text-white font-semibold hover:bg-blue-600 whitespace-nowrap shadow-sm hover:shadow transition-all">Search</button>
+              </div>
+            </form>
+    
+            <!-- Latest releases list -->
+            <div class="space-y-3">
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">28 Sep 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Address by the Honourable Minister at the UN General Assembly</h3>
+              </a>
+              
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">10 Sep 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Brunei Darussalam's Statement on [Issue]</h3>
+              </a>
+              
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">27 Aug 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Joint Statement on the 26th Annual Leaders' Consultation</h3>
+              </a>
+              
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">15 Aug 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Bilateral Meeting with Delegation from United Kingdom</h3>
+              </a>
+              
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">02 Aug 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Press Release: ASEAN Foreign Ministers' Meeting Outcomes</h3>
+              </a>
+              
+              <a href="#" class="block bg-white rounded-lg border border-slate-200 p-4 hover:shadow-lg hover:border-mfa-blue transition-all group">
+                <time class="block text-xs font-medium text-slate-500 mb-2">20 Jul 2025</time>
+                <h3 class="font-semibold text-slate-900 group-hover:text-mfa-blue transition-colors">Appointment of New Ambassador to the Republic of Indonesia</h3>
+              </a>
+            </div>
+          </div>
+    
+          <!-- RIGHT: Missions & Consulates -->
+          <div class="lg:col-span-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-2xl font-bold">Missions &amp; Consulates</h2>
+              <a href="#" class="text-sm font-medium text-mfa-blue hover:underline">Browse directory →</a>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">52 missions worldwide across 5 regions</p>
+
+            <!-- World Map Image -->
+<div class="rounded-xl border overflow-hidden mb-6 bg-white">
+  <img src="https://pngimg.com/d/world_map_PNG31.png" alt="World map showing MFA missions worldwide" class="w-full h-auto object-contain" />
+</div>
+
+            <!-- Missions List by Region -->
+            <div class="space-y-4">
+              <!-- ASEAN -->
+              <div class="rounded-lg border bg-white p-4">
+                <h3 class="font-semibold text-sm text-mfa-blue mb-2">ASEAN</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Bangkok</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Jakarta</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Kuala Lumpur</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Manila</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Singapore</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Vientiane</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Yangon</span>
+                </div>
+              </div>
+
+              <!-- Asia-Pacific -->
+              <div class="rounded-lg border bg-white p-4">
+                <h3 class="font-semibold text-sm text-mfa-blue mb-2">Asia-Pacific</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Beijing</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Tokyo</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Seoul</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">New Delhi</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Canberra</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Wellington</span>
+                </div>
+              </div>
+
+              <!-- Middle East -->
+              <div class="rounded-lg border bg-white p-4">
+                <h3 class="font-semibold text-sm text-mfa-blue mb-2">Middle East</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Riyadh</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Abu Dhabi</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Kuwait</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Muscat</span>
+                </div>
+              </div>
+
+    <!-- Europe -->
+              <div class="rounded-lg border bg-white p-4">
+                <h3 class="font-semibold text-sm text-mfa-blue mb-2">Europe</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">London</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Brussels</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Paris</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Berlin</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Geneva</span>
+                </div>
+</div>
+
+              <!-- Americas -->
+              <div class="rounded-lg border bg-white p-4">
+                <h3 class="font-semibold text-sm text-mfa-blue mb-2">Americas</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Washington D.C.</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">New York (UN)</span>
+                  <span class="text-xs bg-slate-100 px-2 py-1 rounded">Ottawa</span>
+                </div>
+              </div>
+            </div>
+
+    
+        </div>
+      </div>
+    </section>
+    
+
+
+    <!-- Consular & Citizen Services (Citizens/Visitors Tabs) -->
+    <section class="py-12 sm:py-16 bg-slate-900 text-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex gap-6 text-sm">
+          <button id="tabCitizens" class="px-6 py-2.5 rounded-t bg-white text-slate-900 font-semibold">CITIZENS</button>
+          <button id="tabVisitors" class="px-6 py-2.5 rounded-t bg-slate-800 text-slate-100 hover:bg-slate-700">VISITORS</button>
+        </div>
+
+        <!-- Citizens content -->
+        <div id="citizensPanel" class="rounded-b-xl rounded-tr-xl bg-slate-800 p-6 sm:p-8">
+          <h3 class="text-xl font-bold mb-6">Services for Citizens</h3>
+          
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Travel eRegister -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Travel eRegister</h4>
+                  <p class="text-sm text-slate-300">Register your trip for emergency assistance.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Forms & Downloads -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Forms & Downloads</h4>
+                  <p class="text-sm text-slate-300">Visa, diplomatic, and consular forms.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Missions Directory -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Missions Directory</h4>
+                  <p class="text-sm text-slate-300">Embassies & consulates worldwide.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Travel Advisory -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Travel Advisory</h4>
+                  <p class="text-sm text-slate-300">Country-specific safety guidance.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Consular Hotline -->
+            <a href="tel:+6738716001" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Consular Hotline</h4>
+                  <p class="text-sm text-slate-300">+673 871 6001 (Emergencies)</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Travel Tips -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Travel Tips</h4>
+                  <p class="text-sm text-slate-300">Stay informed before you fly.</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Bottom Links -->
+          <div class="flex flex-wrap gap-4 pt-6 mt-6 border-t border-slate-700">
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">FAQs</a>
+            <span class="text-slate-600">•</span>
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">Contact directory</a>
+            <span class="text-slate-600">•</span>
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">Locations & hours</a>
+          </div>
+        </div>
+
+        <!-- Visitors content -->
+        <div id="visitorsPanel" class="hidden rounded-xl bg-slate-800 p-6 sm:p-8">
+          <h3 class="text-xl font-bold mb-6">Services for Visitors</h3>
+          
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Visa Information -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zM1.5 4.875C1.5 3.839 2.34 3 3.375 3h2.25c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-2.25A1.875 1.875 0 011.5 9.375v-4.5z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Visa Information</h4>
+                  <p class="text-sm text-slate-300">Requirements, eligibility, and forms.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Locate Foreign Embassy -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Locate Foreign Embassy</h4>
+                  <p class="text-sm text-slate-300">Find your country's mission in Brunei.</p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Legalisation of Documents -->
+            <a href="#" class="group rounded-xl border border-slate-700 bg-slate-700/50 p-5 hover:border-mfa-blue hover:bg-slate-700 transition-all">
+              <div class="flex items-start gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center text-2xl flex-shrink-0">
+                  <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-white mb-1 group-hover:text-blue-300">Legalisation of Documents</h4>
+                <p class="text-sm text-slate-300">Authentication services and guidance.</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Bottom Links -->
+          <div class="flex flex-wrap gap-4 pt-6 mt-6 border-t border-slate-700">
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">FAQs</a>
+            <span class="text-slate-600">•</span>
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">Contact directory</a>
+            <span class="text-slate-600">•</span>
+            <a href="#" class="text-sm text-blue-300 hover:underline font-medium">Locations & hours</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events & Quick Links Combined -->
+    <section class="py-12 sm:py-16 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-10 gap-8">
+          
+          <!-- Left Column: Events & Publications (70%) -->
+          <div class="lg:col-span-7">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-6">Events & publications</h2>
+
+            <div class="space-y-4">
+              <!-- Event item 1 -->
+              <article class="rounded-xl border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <a href="#" class="flex gap-5 p-5">
+                  <div class="flex-shrink-0">
+                    <img src="https://picsum.photos/400/300?random=44" alt="Public briefing event" class="w-32 h-24 rounded-lg object-cover">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                      <time class="inline-flex items-center px-3 py-1 rounded-md bg-blue-100 text-mfa-blue text-xs font-semibold">02 Oct 2025</time>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Event</span>
+        </div>
+                    <h3 class="font-semibold text-slate-900 text-lg mb-1">Public briefing: passport & consular services</h3>
+                    <p class="text-sm text-slate-600">Open session at ICC Building.</p>
+              </div>
+                </a>
+            </article>
+
+              <!-- Event item 2 -->
+              <article class="rounded-xl border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <a href="#" class="flex gap-5 p-5">
+                  <div class="flex-shrink-0">
+                    <img src="https://picsum.photos/400/300?random=45" alt="Annual report document" class="w-32 h-24 rounded-lg object-cover">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                      <time class="inline-flex items-center px-3 py-1 rounded-md bg-blue-100 text-mfa-blue text-xs font-semibold">01 Sep 2025</time>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Publication</span>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 text-lg mb-1">Annual Report 2024/25</h3>
+                    <p class="text-sm text-slate-600">Downloadable PDF (summary and full).</p>
+              </div>
+                </a>
+            </article>
+
+              <!-- Event item 3 -->
+              <article class="rounded-xl border bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <a href="#" class="flex gap-5 p-5">
+                  <div class="flex-shrink-0">
+                    <img src="https://picsum.photos/400/300?random=46" alt="Diplomatic conference" class="w-32 h-24 rounded-lg object-cover">
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                      <time class="inline-flex items-center px-3 py-1 rounded-md bg-blue-100 text-mfa-blue text-xs font-semibold">15 Aug 2025</time>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Event</span>
+                    </div>
+                    <h3 class="font-semibold text-slate-900 text-lg mb-1">ASEAN Regional Dialogue Forum</h3>
+                    <p class="text-sm text-slate-600">Ministerial-level discussions and networking.</p>
+              </div>
+                </a>
+            </article>
+            </div>
+
+            <!-- View all button -->
+            <a href="#" class="mt-6 block w-full rounded-lg border-2 border-mfa-blue bg-white py-3 text-center font-semibold text-mfa-blue hover:bg-blue-50 transition-colors">
+              All events & publications
+            </a>
+          </div>
+
+          <!-- Right Column: Quick Links (30%) -->
+          <div class="lg:col-span-3">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-6">Quick Links</h2>
+            <div class="space-y-3">
+              <a href="#" class="group rounded-xl border bg-white p-5 hover:border-mfa-blue hover:shadow-sm transition-all flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">🌐</div>
+                <span class="font-semibold group-hover:text-mfa-blue">Commonwealth Fund</span>
+              </a>
+              <a href="#" class="group rounded-xl border bg-white p-5 hover:border-mfa-blue hover:shadow-sm transition-all flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">📖</div>
+                <span class="font-semibold group-hover:text-mfa-blue">Publications</span>
+              </a>
+              <a href="#" class="group rounded-xl border bg-white p-5 hover:border-mfa-blue hover:shadow-sm transition-all flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">📝</div>
+                <span class="font-semibold group-hover:text-mfa-blue">Tenders & Quotations</span>
+              </a>
+              <a href="#" class="group rounded-xl border bg-white p-5 hover:border-mfa-blue hover:shadow-sm transition-all flex items-center gap-4">
+                <div class="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">🎓</div>
+                <span class="font-semibold group-hover:text-mfa-blue">Scholarship</span>
+              </a>
+            </div>
+          </div>
+
+    </div>
+  </div>
+</section>
+
+
+    <!-- Helpful contacts (lean) -->
+    <section class="py-12 sm:py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold mb-6">Contact & Support</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="rounded-xl bg-slate-50 border p-6">
+            <h3 class="font-semibold text-lg">General Lines</h3>
+            <p class="mt-2 text-slate-600 text-sm">HQ: +673 226 1177<br />ICC: +673 238 3374</p>
+            <a href="#" class="mt-3 inline-flex text-mfa-blue hover:text-blue-700 text-sm font-medium">Contact directory →</a>
+          </div>
+          <div class="rounded-xl bg-slate-50 border p-6">
+            <h3 class="font-semibold text-lg">Consular Emergency</h3>
+            <p class="mt-2 text-slate-600 text-sm">Hotline: +673 871 6001</p>
+            <a href="#" class="mt-3 inline-flex text-mfa-blue hover:text-blue-700 text-sm font-medium">Register travel →</a>
+          </div>
+          <div class="rounded-xl bg-slate-50 border p-6">
+            <h3 class="font-semibold text-lg">Working Hours</h3>
+            <p class="mt-2 text-slate-600 text-sm">Mon–Thu &amp; Sat • 7:45am – 4:30pm</p>
+            <a href="#" class="mt-3 inline-flex text-mfa-blue hover:text-blue-700 text-sm font-medium">Locations →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cultural Showcase Section -->
+    <section class="relative py-16 sm:py-24 overflow-hidden">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 bg-gradient-to-br from-mfa-blue to-blue-900">
+        <div class="absolute inset-0 opacity-20" style="background-image: url('https://www.shutterstock.com/image-vector/bunga-melor-brunei-traditional-pattern-600w-2382609319.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent"></div>
+      </div>
+
+      <!-- Content -->
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+        <div class="max-w-3xl mx-auto">
+          <p class="text-blue-200 text-sm font-semibold uppercase tracking-wider mb-4">Brunei Darussalam</p>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">Strengthening Global Partnerships</h2>
+          <p class="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed">Promoting peace, cooperation, and mutual understanding through diplomacy and international relations.</p>
+          
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="#" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-mfa-blue font-semibold hover:bg-blue-50 transition-colors">
+              Learn about our foreign policy
+              <span>→</span>
+            </a>
+            <a href="#" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-white text-white font-semibold hover:bg-white/10 transition-colors">
+              View missions worldwide
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
+          <div class="backdrop-blur-sm bg-white/10 rounded-xl p-6 border border-white/20">
+            <p class="text-3xl sm:text-4xl font-bold">55</p>
+            <p class="text-sm text-blue-200 mt-1">Missions Worldwide</p>
+          </div>
+          <div class="backdrop-blur-sm bg-white/10 rounded-xl p-6 border border-white/20">
+            <p class="text-3xl sm:text-4xl font-bold">120+</p>
+            <p class="text-sm text-blue-200 mt-1">Bilateral Agreements</p>
+          </div>
+          <div class="backdrop-blur-sm bg-white/10 rounded-xl p-6 border border-white/20">
+            <p class="text-3xl sm:text-4xl font-bold">6</p>
+            <p class="text-sm text-blue-200 mt-1">Regions Covered</p>
+          </div>
+          <div class="backdrop-blur-sm bg-white/10 rounded-xl p-6 border border-white/20">
+            <p class="text-3xl sm:text-4xl font-bold">ASEAN</p>
+            <p class="text-sm text-blue-200 mt-1">Member State</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <p class="font-semibold">Ministry of Foreign Affairs</p>
+          <p class="text-sm text-slate-400 mt-2">Brunei Darussalam</p>
+        </div>
+        <div>
+          <p class="font-semibold">Explore</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href="#" class="hover:text-blue-300">Foreign Policy</a></li>
+            <li><a href="#" class="hover:text-blue-300">Missions</a></li>
+            <li><a href="#" class="hover:text-blue-300">News &amp; Events</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold">Services</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href="#" class="hover:text-blue-300">eRegister</a></li>
+            <li><a href="#" class="hover:text-blue-300">Visa Information</a></li>
+            <li><a href="#" class="hover:text-blue-300">Forms &amp; Downloads</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="font-semibold">Contact</p>
+          <p class="text-sm text-slate-400 mt-2">General: +673 226 1177<br />Emergency: +673 871 6001</p>
+          <a href="#" class="mt-3 inline-flex text-sm text-blue-300 hover:text-amber-200">Contact directory →</a>
+        </div>
+      </div>
+      <div class="mt-8 border-t border-slate-800 pt-6 text-xs text-slate-400 flex items-center justify-between">
+        <p>© Ministry of Foreign Affairs. All rights reserved.</p>
+        <a href="#" class="hover:text-blue-300">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Minimal JS -->
+  <script>
+    // Advanced Search Modal
+    (function () {
+      const btn = document.getElementById('advancedSearchBtn');
+      const btnMobile = document.getElementById('advancedSearchBtnMobile');
+      const modal = document.getElementById('advancedSearchModal');
+      
+      if (modal) {
+        // Desktop button
+        if (btn) {
+          btn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+          });
+        }
+
+        // Mobile button
+        if (btnMobile) {
+          btnMobile.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+          });
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+          }
+        });
+      }
+    })();
+
+    // Hero carousel
+    (function () {
+      const container = document.getElementById('heroCarousel');
+      const slides = Array.from(container.children);
+      const prev = document.getElementById('heroPrev');
+      const next = document.getElementById('heroNext');
+      const dots = Array.from(document.querySelectorAll('.carousel-dot'));
+      let index = 0;
+
+      function update(i) {
+        index = (i + slides.length) % slides.length;
+        container.scrollTo({ left: slides[index].offsetLeft, behavior: 'smooth' });
+        dots.forEach((d, k) => d.setAttribute('aria-current', k === index ? 'true' : 'false'));
+      }
+      prev.addEventListener('click', () => update(index - 1));
+      next.addEventListener('click', () => update(index + 1));
+      dots.forEach((d, i) => d.addEventListener('click', () => update(i)));
+
+      // Auto-advance (respect reduced motion)
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce) setInterval(() => update(index + 1), 7000);
+
+      // Sync on scroll stop
+      let t;
+      container.addEventListener('scroll', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          const l = container.scrollLeft;
+          let nearest = 0, min = Infinity;
+          slides.forEach((s, i) => {
+            const d = Math.abs(s.offsetLeft - l);
+            if (d < min) { min = d; nearest = i; }
+          });
+          index = nearest;
+          dots.forEach((d, k) => d.setAttribute('aria-current', k === index ? 'true' : 'false'));
+        }, 120);
+      });
+    })();
+
+    // Tabs (Citizens / Visitors)
+    (function () {
+      const tabCit = document.getElementById('tabCitizens');
+      const tabVis = document.getElementById('tabVisitors');
+      const panelCit = document.getElementById('citizensPanel');
+      const panelVis = document.getElementById('visitorsPanel');
+
+      function showCit() {
+        tabCit.classList.add('bg-white','text-slate-900','font-semibold');
+        tabVis.classList.remove('bg-white','text-slate-900','font-semibold');
+        tabVis.classList.add('bg-slate-800');
+        panelCit.classList.remove('hidden');
+        panelVis.classList.add('hidden');
+      }
+      function showVis() {
+        tabVis.classList.add('bg-white','text-slate-900','font-semibold');
+        tabCit.classList.remove('bg-white','text-slate-900','font-semibold');
+        tabCit.classList.add('bg-slate-800');
+        panelVis.classList.remove('hidden');
+        panelCit.classList.add('hidden');
+      }
+      tabCit.addEventListener('click', showCit);
+      tabVis.addEventListener('click', showVis);
+    })();
+  </script>
+</body>
+</html>
